@@ -23,6 +23,11 @@ function generateNextTaskOverview() {
   generateTaskOverview(getTodayDate());
 }
 
+function generateNextTaskOverviewForTestDate() {
+  generateTaskOverview(new Date('2019-11-01'));
+}
+
+
 function generateTaskOverview(date) {
   // The user might interfere - so there may be old intermediate sheets around which need to be deleted.
   deleteSheet('...erstelle Übersicht-h...');

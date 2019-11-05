@@ -35,7 +35,12 @@ function generateTaskOverview(date) {
 
     var assignmentList = [];
     for (var i = 1; i < LAST_NAME_COLUMN_INDEX + 1; i++) {
-        assignmentList.push(new TaskAssignment(allValues[taskRowIndex][i], allValues[NAMES_ROW_INDEX][i]));
+        var tasks = allValues[taskRowIndex][i].split('/').map(function (e) { return e.trim(); });
+        var agent = allValues[NAMES_ROW_INDEX][i];
+
+        tasks.forEach(function (aTask) {
+            assignmentList.push(new TaskAssignment(aTask, agent));
+        });
     }
 
     assignmentList.sort(compareTaskAssignmentsByTask);
@@ -43,7 +48,8 @@ function generateTaskOverview(date) {
     var userVisibleSheet = activeSpreadsheet.getActiveSheet();
     var activeRange = userVisibleSheet.getActiveRange();
 
-    var overviewSheet = activeSpreadsheet.insertSheet('Aufgabenübersicht');
+    var overviewSheet = activeSpreadsheet.insertSheet('...erstelle AÜ...');
+    overviewSheet.hideSheet();
 
     activeSpreadsheet.setActiveSheet(userVisibleSheet);
     activeSpreadsheet.setActiveRange(activeRange);
@@ -53,16 +59,20 @@ function generateTaskOverview(date) {
     assignmentList.sort(compareTaskAssignmentsByLastnameFirstname);
     addOverviewToSheet(overviewSheet, 1, 4, 'Übersicht für den ' + Utilities.formatDate(dateOfTasks, getTimeZoneGermany(), "dd.MM.yyyy") + ' nach Namen', assignmentList, true);
 
-    // Hack to some whitespace between the overview blocks.
-    overviewSheet.getRange(1, 3).setValue('WWW');
+    // Hack to add some whitespace between the overview blocks.
+    overviewSheet.getRange(1, 3).setValue('H');
     overviewSheet.autoResizeColumn(3);
     overviewSheet.getRange(1, 3).setValue('');
+
+    overviewSheet.setName('Aufgabenübersicht');
+    overviewSheet.showSheet();
 }
 
 function addOverviewToSheet(sheet, row, column, heading, assignmentList, namesFirst) {
     var headingRange = sheet.getRange(row, column, 1, 2);
     headingRange.merge();
     headingRange.setValue('Heading');
+    headingRange.setBackground('silver');
 
     for (var i = 0; i < assignmentList.length; i++) {
         if (namesFirst) {

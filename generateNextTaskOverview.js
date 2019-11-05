@@ -1,3 +1,18 @@
+function TaskAssignment(task, agent) {
+    this.task = task;
+    this.agent = agent.trim();
+
+    var namePieces = this.agent.split(' ');
+    this.lastname = namePieces[namePieces.length - 1];
+    this.firstname = namePieces[0];
+
+    this.getLastnameFirstname = function () {
+        return this.lastname + ', ' + this.firstname;
+    }
+}
+
+
+
 function generateNextTaskOverview() {
     generateTaskOverview(getTodayDate());
 }
@@ -20,7 +35,7 @@ function generateTaskOverview(date) {
 
     var assignmentList = [];
     for (var i = 1; i < LAST_NAME_COLUMN_INDEX + 1; i++) {
-        assignmentList.push({ task: allValues[taskRowIndex][i], agent: allValues[NAMES_ROW_INDEX][i] });
+        assignmentList.push(new TaskAssignment(allValues[taskRowIndex][i], allValues[NAMES_ROW_INDEX][i]));
     }
 
     assignmentList.sort(compareTaskAssignmentsByTask);
@@ -33,22 +48,37 @@ function generateTaskOverview(date) {
     activeSpreadsheet.setActiveSheet(userVisibleSheet);
     activeSpreadsheet.setActiveRange(activeRange);
 
-    addOverviewToSheet(overviewSheet, 1, 1, dateOfTasks, assignmentList);
+    addOverviewToSheet(overviewSheet, 1, 1, 'Übersicht für den ' + Utilities.formatDate(dateOfTasks, getTimeZoneGermany(), "dd.MM.yyyy") + ' nach Aufgaben', assignmentList, false);
+
+    assignmentList.sort(compareTaskAssignmentsByLastnameFirstname);
+    addOverviewToSheet(overviewSheet, 1, 4, 'Übersicht für den ' + Utilities.formatDate(dateOfTasks, getTimeZoneGermany(), "dd.MM.yyyy") + ' nach Namen', assignmentList, true);
+
+    // Hack to some whitespace between the overview blocks.
+    overviewSheet.getRange(1, 3).setValue('WWW');
+    overviewSheet.autoResizeColumn(3);
+    overviewSheet.getRange(1, 3).setValue('');
 }
 
-function addOverviewToSheet(sheet, row, column, date, assignmentList) {
+function addOverviewToSheet(sheet, row, column, heading, assignmentList, namesFirst) {
     var headingRange = sheet.getRange(row, column, 1, 2);
     headingRange.merge();
     headingRange.setValue('Heading');
 
     for (var i = 0; i < assignmentList.length; i++) {
-        sheet.getRange(row + i + 1, column).setValue(assignmentList[i].task);
-        sheet.getRange(row + i + 1, column + 1).setValue(assignmentList[i].agent);
-    }
-    sheet.autoResizeColumn(1);
-    sheet.autoResizeColumn(2);
+        if (namesFirst) {
+            sheet.getRange(row + i + 1, column).setValue(assignmentList[i].getLastnameFirstname());
+            sheet.getRange(row + i + 1, column + 1).setValue(assignmentList[i].task);
+        }
+        else {
+            sheet.getRange(row + i + 1, column).setValue(assignmentList[i].task);
+            sheet.getRange(row + i + 1, column + 1).setValue(assignmentList[i].getLastnameFirstname());
+        }
 
-    headingRange.setValue('Übersicht für den: ' + Utilities.formatDate(date, getTimeZoneGermany(), "dd.MM.yyyy"));
+    }
+    sheet.autoResizeColumn(column);
+    sheet.autoResizeColumn(column + 1);
+
+    headingRange.setValue(heading);
     headingRange.setFontSize(12);
     headingRange.setFontWeight('bold');
 }
@@ -126,6 +156,17 @@ function compareTaskAssignmentsByTask(a, b) {
     }
     return 0;
 }
+
+function compareTaskAssignmentsByLastnameFirstname(a, b) {
+    if (a.getLastnameFirstname() < b.getLastnameFirstname()) {
+        return -1;
+    }
+    if (a.getLastnameFirstname() > b.getLastnameFirstname()) {
+        return 1;
+    }
+    return 0;
+}
+
 
 function getAllValues() {
     var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();

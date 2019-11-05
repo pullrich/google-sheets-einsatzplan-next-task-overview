@@ -1,67 +1,29 @@
 function generateNextTaskOverview() {
-    // https://findicons.com/files/icons/2212/carpelinx/64/add.png
+    generateTaskOverview(getTodayDate());
+}
+
+function generateTaskOverview(date) {
     removeOverviewSheet();
-
-
-    var dateColumn = 1;
-    var todayDate = new Date();
-    var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    var dataSheet = activeSpreadsheet.getSheetByName(getDataSheetName());
-    if (dataSheet != null) {
-        Logger.log('Found data sheet by name.');
-    } else {
-        return;
-    }
 
     const LAST_NAME_COLUMN_INDEX = 18;
     const NAMES_ROW_INDEX = 2;
 
-    var allValues = dataSheet.getDataRange().getValues();
+    var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    var allValues = getAllValues();
 
-    var dateColumnArray = getColumnDataFromRowColumnArray(allValues, 0);
-    var firstDateOccurrsIndex = getIndexOfDateValueOccurrance(dateColumnArray, false);
-    var lastDateOccurrsIndex = getIndexOfDateValueOccurrance(dateColumnArray, true);
-
-    var taskRowIndex = -1;
-    var dateOfTasks = null;
-    for (var i = firstDateOccurrsIndex; i < lastDateOccurrsIndex + 1; i++) {
-        if (isValidDate(dateColumnArray[i])) {
-            if (isGreaterOrEqualDate(dateColumnArray[i], todayDate)) {
-                taskRowIndex = i;
-                dateOfTasks = dateColumnArray[i];
-                break;
-            }
-        }
-        continue;
-    }
-
-    if (taskRowIndex === -1) {
+    var taskRowIndex = getRowOfRelevantTasks(allValues, date) - 1;
+    if (taskRowIndex <= -1) {
         Logger.log('No fitting date row found.');
         return;
     }
+    var dateOfTasks = getDateOfTasks(allValues, taskRowIndex + 1);
 
     var assignmentList = [];
     for (var i = 1; i < LAST_NAME_COLUMN_INDEX + 1; i++) {
-        assignmentList.push({ task: allValues[taskRowIndex][i], agent: allValues[NAMES_ROW_INDEX][i] })
+        assignmentList.push({ task: allValues[taskRowIndex][i], agent: allValues[NAMES_ROW_INDEX][i] });
     }
-    Logger.log('assignment list:');
-    Logger.log(assignmentList);
 
-    var testarray = ['c', 'b', 'a'];
-    Logger.log('testarray:');
-    Logger.log(testarray);
-    testarray.sort();
-    Logger.log('sorted testarray:');
-    Logger.log(testarray);
-
-    assignmentList.sort(function (a, b) { (a.task > b.task) ? 1 : -1 });
-    //assignmentList.sort();
-    //assignmentList.reverse();
-    Logger.log('Sorted assignment list:');
-    Logger.log(assignmentList);
-    // TODO: Sorting does not seem to work ... at least it is not displayed as expected in the log.
-
-    //return;
+    assignmentList.sort(compareTaskAssignmentsByTask);
 
     var userVisibleSheet = activeSpreadsheet.getActiveSheet();
     var activeRange = userVisibleSheet.getActiveRange();
@@ -147,8 +109,22 @@ function getDataSheetName() {
     return "Tabellenblatt1";
 }
 
+function getDateOfTasks(allValues, row) {
+    return allValues[row - 1][0];
+}
+
 function isGreaterOrEqualDate(d1, d2) {
     return (Utilities.formatDate(d1, getTimeZoneGermany(), "yyyy-MM-dd") >= Utilities.formatDate(d2, getTimeZoneGermany(), "yyyy-MM-dd"));
+}
+
+function compareTaskAssignmentsByTask(a, b) {
+    if (a.task < b.task) {
+        return -1;
+    }
+    if (a.task > b.task) {
+        return 1;
+    }
+    return 0;
 }
 
 function getAllValues() {
@@ -191,7 +167,7 @@ function isChangeInRelevantRow(changedRow) {
  * @param {Event} e The onOpen event.
  */
 function onOpen(e) {
-    //generateNextTaskOverview();
+    generateNextTaskOverview();
 }
 
 /**
@@ -213,13 +189,4 @@ function isValidDate(d) {
     if (Object.prototype.toString.call(d) !== "[object Date]")
         return false;
     return !isNaN(d.getTime());
-}
-
-// Test if value is a date and if so format
-// otherwise, reflect input variable back as-is. 
-function isDate(sDate) {
-    if (isValidDate(sDate)) {
-        sDate = Utilities.formatDate(new Date(sDate), "PST", "MM/dd/yyyy");
-    }
-    return sDate;
 }

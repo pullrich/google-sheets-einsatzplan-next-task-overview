@@ -1,6 +1,7 @@
 /**
  * @OnlyCurrentDoc
  */
+// https://developers.google.com/apps-script/guides/services/authorization
 
 function TaskAssignment(task, agent, taskcolor) {
   this.task = task;
@@ -23,15 +24,18 @@ function generateNextTaskOverview() {
 }
 
 function generateTaskOverview(date) {
+  // The user might interfere - so there may be old intermediate sheets around which need to be deleted.
+  deleteSheet('...erstelle Übersicht-h...');
+  deleteSheet('...erstelle Übersicht-v...');
+
   deleteSheet('Übersicht-h');
   deleteSheet('Übersicht-v');
-
-  const LAST_NAME_COLUMN_INDEX = 17; // 18 > 17 because a name column was deleted. Needs fixing anyway to be dynamic.
-  const NAMES_ROW_INDEX = 2;
 
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sourceSheet = activeSpreadsheet.getSheetByName(getDataSheetName());
   var allValues = getAllValues();
+  var namesRowIndex = getNameRow(allValues) - 1;
+  var lastNameColumnIndex = getLastNameColumn(allValues) - 1;
 
   var taskRowIndex = getRowOfRelevantTasks(allValues, date) - 1;
   if (taskRowIndex <= -1) {
@@ -42,9 +46,9 @@ function generateTaskOverview(date) {
 
   // Fill array with overview data.
   var assignmentList = [];
-  for (var i = 1; i < LAST_NAME_COLUMN_INDEX + 1; i++) {
+  for (var i = 1; i < lastNameColumnIndex + 1; i++) {
     var tasks = allValues[taskRowIndex][i].split('/').map(function (e) { return e.trim(); });
-    var agent = allValues[NAMES_ROW_INDEX][i];
+    var agent = allValues[namesRowIndex][i];
 
     tasks.forEach(function (aTask) {
       assignmentList.push(new TaskAssignment(aTask, agent, sourceSheet.getRange(taskRowIndex + 1, i + 1).getBackground()));
@@ -219,8 +223,28 @@ function getTodayDate() {
   return new Date();
 }
 
-function getNameRow() {
-  return 3;
+function getNameRow(allValues) {
+  // Expectiation: The name-row will be the row before the first occurrance of a date value in the first column.
+  const FIRST_COLUMN_INDEX = 0;
+  var dateColumnArray = getColumnDataFromRowColumnArray(allValues, FIRST_COLUMN_INDEX);
+  var firstDateOccurrsIndex = getIndexOfDateValueOccurrance(dateColumnArray, false);
+  var nameRow = firstDateOccurrsIndex; // We can just use the index, because we need the row (and not the index) BEFORE the first occurrence of a date.
+  return nameRow;
+}
+
+function getLastNameColumn(allValues) {
+  // Expectation: The first column will not contain a name in the name row. The following columns will contain names if the column is not empty.
+  //    So the first empty column in the name row marks the end of the names.
+  var lastNameColumn = 0;
+  var nameRowIndex = getNameRow(allValues) - 1;
+  for (var i = 1; i < allValues[nameRowIndex].length; i++) {
+    var cellValue = allValues[nameRowIndex][i];
+    if (cellValue === "" || cellValue === undefined || cellValue === null) {
+      lastNameColumn = i; // We can just use the index, because we need the colun (and not the index) BEFORE the first occurrence of an empty cell.
+      break;
+    }
+  }
+  return lastNameColumn;
 }
 
 function getDataSheetName() {
@@ -288,7 +312,7 @@ function getRowOfRelevantTasks(allValues, date) {
 }
 
 function isChangeInRelevantRow(changedRow) {
-  return (changedRow === getRowOfRelevantTasks(getAllValues(), getTodayDate()) || changedRow === getNameRow());
+  return (changedRow === getRowOfRelevantTasks(getAllValues(), getTodayDate()) || changedRow === getNameRow(getAllValues()));
 }
 
 /**

@@ -134,11 +134,11 @@ function writeOverviewToSheetHorizontally(date, assignments) {
   sheet.autoResizeColumn(4);
   sheet.autoResizeColumn(5);
 
-  firstHeadingRange.setValue('Übersicht für den ' + Utilities.formatDate(date, getTimeZoneGermany(), "dd.MM.yyyy") + ' nach Aufgaben');
+  firstHeadingRange.setValue('Übersicht für den ' + getDateInGermanFormat(date) + ' nach Aufgaben');
   firstHeadingRange.setFontSize(11);
   firstHeadingRange.setFontWeight('bold');
 
-  secondHeadingRange.setValue('Übersicht für den ' + Utilities.formatDate(date, getTimeZoneGermany(), "dd.MM.yyyy") + ' nach Namen');
+  secondHeadingRange.setValue('Übersicht für den ' + getDateInGermanFormat(date) + ' nach Namen');
   secondHeadingRange.setFontSize(11);
   secondHeadingRange.setFontWeight('bold');
 
@@ -184,11 +184,11 @@ function writeOverviewToSheetVertically(date, assignments) {
   sheet.autoResizeColumn(1);
   sheet.autoResizeColumn(2);
 
-  firstHeadingRange.setValue('Übersicht für den ' + Utilities.formatDate(date, getTimeZoneGermany(), "dd.MM.yyyy") + ' nach Aufgaben');
+  firstHeadingRange.setValue('Übersicht für den ' + getDateInGermanFormat(date) + ' nach Aufgaben');
   firstHeadingRange.setFontSize(11);
   firstHeadingRange.setFontWeight('bold');
 
-  secondHeadingRange.setValue('Übersicht für den ' + Utilities.formatDate(date, getTimeZoneGermany(), "dd.MM.yyyy") + ' nach Namen');
+  secondHeadingRange.setValue('Übersicht für den ' + getDateInGermanFormat(date) + ' nach Namen');
   secondHeadingRange.setFontSize(11);
   secondHeadingRange.setFontWeight('bold');
 
@@ -390,8 +390,6 @@ function genOverview_showDatePrompt() {
       return;
     }
 
-    //formattedDateFromUser = Utilities.formatDate(dateFromUser, getTimeZoneGermany(), "dd.MM.yyyy")
-    //ui.alert('Eigegebenes Datum: ' + formattedDateFromUser + '\nErzeuge Übersicht.');
     generateTaskOverview(dateFromUser);
   } else if (button == ui.Button.CANCEL) {
   } else if (button == ui.Button.CLOSE) {
@@ -404,4 +402,8 @@ function genOverview_showDatePrompt() {
 
 function getDateFormatString() {
   return "DD.MM.YYYY"
+}
+
+function getDateInGermanFormat(date) {
+  return Utilities.formatDate(date, getTimeZoneGermany(), "dd.MM.yyyy")
 }

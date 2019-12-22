@@ -217,7 +217,6 @@ function getColumnDataFromRowColumnArray(anArray, columnIndex) {
   return newArray;
 }
 
-
 function deleteSheet(sheetname) {
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheetToDelete = activeSpreadsheet.getSheetByName(sheetname);
@@ -313,7 +312,6 @@ function compareTaskAssignmentsByLastnameFirstname(a, b) {
   return 0;
 }
 
-
 function getAllValues() {
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var dataSheet = activeSpreadsheet.getSheetByName(getDataSheetName());
@@ -349,13 +347,6 @@ function isChangeInRelevantRow(changedRow) {
   return (changedRow === getRowOfRelevantTasks(getAllValues(), getTodayDate()) || changedRow === getNameRow(getAllValues()));
 }
 
-// From http://stackoverflow.com/questions/1353684
-// Returns 'true' if variable d is a date object.
-function isValidDate(d) {
-  if (Object.prototype.toString.call(d) !== "[object Date]")
-    return false;
-  return !isNaN(d.getTime());
-}
 
 
 /**
@@ -406,4 +397,12 @@ function getDateFormatString() {
 
 function getDateInGermanFormat(date) {
   return Utilities.formatDate(date, getTimeZoneGermany(), "dd.MM.yyyy")
+}
+
+// From http://stackoverflow.com/questions/1353684
+// Returns 'true' if variable d is a date object.
+function isValidDate(d) {
+  if (Object.prototype.toString.call(d) !== "[object Date]")
+    return false;
+  return !isNaN(d.getTime());
 }

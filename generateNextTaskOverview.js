@@ -10,8 +10,6 @@
 function onOpen(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var menuEntries = [];
-  // When the user clicks on "addMenuExample" then "Menu Entry 1", the function function1 is
-  // executed.
   menuEntries.push({ name: "Nächste", functionName: "generateNextTaskOverview" });
   //menuEntries.push(null); // line separator
   menuEntries.push({ name: "Für Datum", functionName: "genOverview_showDatePrompt" });

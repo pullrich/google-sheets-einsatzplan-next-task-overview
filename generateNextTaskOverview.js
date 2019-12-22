@@ -3,6 +3,38 @@
  */
 // https://developers.google.com/apps-script/guides/services/authorization
 
+/**
+ * The event handler triggered when opening the spreadsheet.
+ * @param {Event} e The onOpen event.
+ */
+function onOpen(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var menuEntries = [];
+  // When the user clicks on "addMenuExample" then "Menu Entry 1", the function function1 is
+  // executed.
+  menuEntries.push({ name: "Nächste", functionName: "generateNextTaskOverview" });
+  //menuEntries.push(null); // line separator
+  menuEntries.push({ name: "Für Datum", functionName: "genOverview_showDatePrompt" });
+
+  ss.addMenu("Übersicht erzeugen", menuEntries);
+
+
+  generateNextTaskOverview();
+}
+
+/**
+ * The event handler triggered when editing the spreadsheet.
+ * @param {Event} e The onEdit event.
+ */
+function onEdit(e) {
+  if (isChangeInRelevantRow(e.range.getRow())) {
+    generateNextTaskOverview();
+  }
+  else {
+    Logger.log('Change not in relevant row. No action required.');
+  }
+}
+
 function TaskAssignment(task, agent, taskcolor) {
   this.task = task;
   this.agent = agent.trim();
@@ -315,38 +347,6 @@ function getRowOfRelevantTasks(allValues, date) {
 
 function isChangeInRelevantRow(changedRow) {
   return (changedRow === getRowOfRelevantTasks(getAllValues(), getTodayDate()) || changedRow === getNameRow(getAllValues()));
-}
-
-/**
- * The event handler triggered when opening the spreadsheet.
- * @param {Event} e The onOpen event.
- */
-function onOpen(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var menuEntries = [];
-  // When the user clicks on "addMenuExample" then "Menu Entry 1", the function function1 is
-  // executed.
-  menuEntries.push({ name: "Nächste", functionName: "generateNextTaskOverview" });
-  //menuEntries.push(null); // line separator
-  menuEntries.push({ name: "Für Datum", functionName: "genOverview_showDatePrompt" });
-
-  ss.addMenu("Übersicht erzeugen", menuEntries);
-
-
-  generateNextTaskOverview();
-}
-
-/**
- * The event handler triggered when editing the spreadsheet.
- * @param {Event} e The onEdit event.
- */
-function onEdit(e) {
-  if (isChangeInRelevantRow(e.range.getRow())) {
-    generateNextTaskOverview();
-  }
-  else {
-    Logger.log('Change not in relevant row. No action required.');
-  }
 }
 
 // From http://stackoverflow.com/questions/1353684

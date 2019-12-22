@@ -23,11 +23,6 @@ function generateNextTaskOverview() {
   generateTaskOverview(getTodayDate());
 }
 
-function generateNextTaskOverviewForTestDate() {
-  generateTaskOverview(new Date('2019-11-01'));
-}
-
-
 function generateTaskOverview(date) {
   // The user might interfere - so there may be old intermediate sheets around which need to be deleted.
   deleteSheet('...erstelle Übersicht-h...');
@@ -36,6 +31,7 @@ function generateTaskOverview(date) {
   deleteSheet('Übersicht-h');
   deleteSheet('Übersicht-v');
 
+  var ui = SpreadsheetApp.getUi();
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sourceSheet = activeSpreadsheet.getSheetByName(getDataSheetName());
   var allValues = getAllValues();
@@ -44,6 +40,7 @@ function generateTaskOverview(date) {
 
   var taskRowIndex = getRowOfRelevantTasks(allValues, date) - 1;
   if (taskRowIndex <= -1) {
+    ui.alert('Da keine geeignete Datenzeile gefunden werden konnte, wird kein Übersichtstabellenblatt erzeugt.', ui.ButtonSet.OK);
     Logger.log('No fitting date row found.');
     return;
   }
@@ -325,6 +322,17 @@ function isChangeInRelevantRow(changedRow) {
  * @param {Event} e The onOpen event.
  */
 function onOpen(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var menuEntries = [];
+  // When the user clicks on "addMenuExample" then "Menu Entry 1", the function function1 is
+  // executed.
+  menuEntries.push({ name: "Nächste", functionName: "generateNextTaskOverview" });
+  //menuEntries.push(null); // line separator
+  menuEntries.push({ name: "Für Datum", functionName: "genOverview_showDatePrompt" });
+
+  ss.addMenu("Übersicht erzeugen", menuEntries);
+
+
   generateNextTaskOverview();
 }
 
@@ -347,4 +355,53 @@ function isValidDate(d) {
   if (Object.prototype.toString.call(d) !== "[object Date]")
     return false;
   return !isNaN(d.getTime());
+}
+
+
+/**
+ * Expected format DD.MM.YYYY
+ */
+function parseTextAsDate(text) {
+  var dayIdx = 0;
+  var monthIdx = 1;
+  var yearIdx = 2;
+  var dateElements = text.split(".");
+  return new Date(parseInt(dateElements[yearIdx]), parseInt(dateElements[monthIdx]) - 1, parseInt(dateElements[dayIdx]));
+}
+
+function genOverview_showDatePrompt() {
+  var ui = SpreadsheetApp.getUi();
+
+  var result = ui.prompt(
+    'Übersicht für ein Datum erzeugen',
+    'Bitte gib das gewünschte Datum im Format ' + getDateFormatString() + ' ein.',
+    ui.ButtonSet.OK_CANCEL);
+
+  // Process the user's response.
+  var button = result.getSelectedButton();
+  var text = result.getResponseText();
+  if (button == ui.Button.OK) {
+    dateFromUser = new Date(0);
+    try {
+      dateFromUser = parseTextAsDate(text);
+    }
+    catch (err) {
+      ui.alert('Eingegebenes Datum [' + text + '] nicht erkannt.\nBenötigtes Format: ' + getDateFormatString());
+      return;
+    }
+
+    //formattedDateFromUser = Utilities.formatDate(dateFromUser, getTimeZoneGermany(), "dd.MM.yyyy")
+    //ui.alert('Eigegebenes Datum: ' + formattedDateFromUser + '\nErzeuge Übersicht.');
+    generateTaskOverview(dateFromUser);
+  } else if (button == ui.Button.CANCEL) {
+  } else if (button == ui.Button.CLOSE) {
+  }
+}
+
+//
+// Helper functions ->
+//
+
+function getDateFormatString() {
+  return "DD.MM.YYYY"
 }

@@ -93,16 +93,14 @@ function generateTaskOverview(date) {
 
 function writeOverviewToSheetHorizontally(date, assignments) {
   sheet = addHiddenSheet('...erstelle Übersicht-h...');
-
-  var firstHeadingRange = sheet.getRange(1, 1, 1, 2);
-  firstHeadingRange.merge();
-  firstHeadingRange.setValue('Heading');
-  firstHeadingRange.setBackground('silver');
-
   assignments.sort(compareTaskAssignmentsByTask);
 
-  var row = 2;
+  var row = 1;
   var column = 1;
+  var firstHeaderRow = row;
+  var firstHeaderColumn = column;
+  row += getHeadingRowCount();
+
   for (var i = 0; i < assignments.length; i++) {
     sheet.getRange(row, column).setValue(assignments[i].task);
     sheet.getRange(row, column).setBackground(assignments[i].taskcolor);
@@ -110,15 +108,14 @@ function writeOverviewToSheetHorizontally(date, assignments) {
     row += 1;
   }
 
+  row = 1;
   column = 4;
-  var secondHeadingRange = sheet.getRange(1, column, 1, 2);
-  secondHeadingRange.merge();
-  secondHeadingRange.setValue('Heading');
-  secondHeadingRange.setBackground('silver');
+  var secondHeaderRow = row;
+  var secondHeaderColumn = column;
 
   assignments.sort(compareTaskAssignmentsByLastnameFirstname);
 
-  row = 2;
+  row += getHeadingRowCount();
   for (var i = 0; i < assignments.length; i++) {
     sheet.getRange(row, column).setValue(assignments[i].getLastnameFirstname());
     sheet.getRange(row, column + 1).setValue(assignments[i].task);
@@ -132,13 +129,9 @@ function writeOverviewToSheetHorizontally(date, assignments) {
   sheet.autoResizeColumn(4);
   sheet.autoResizeColumn(5);
 
-  firstHeadingRange.setValue('Übersicht für den ' + getDateInGermanFormat(date) + ' nach Aufgaben');
-  firstHeadingRange.setFontSize(11);
-  firstHeadingRange.setFontWeight('bold');
+  writeHeading(sheet, firstHeaderRow, firstHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Aufgaben');
+  writeHeading(sheet, secondHeaderRow, secondHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Namen');
 
-  secondHeadingRange.setValue('Übersicht für den ' + getDateInGermanFormat(date) + ' nach Namen');
-  secondHeadingRange.setFontSize(11);
-  secondHeadingRange.setFontWeight('bold');
 
   sheet.setName('Übersicht-h');
   sheet.showSheet();
@@ -146,16 +139,14 @@ function writeOverviewToSheetHorizontally(date, assignments) {
 
 function writeOverviewToSheetVertically(date, assignments) {
   sheet = addHiddenSheet('...erstelle Übersicht-v...');
-
-  var firstHeadingRange = sheet.getRange(1, 1, 1, 2);
-  firstHeadingRange.merge();
-  firstHeadingRange.setValue('Heading');
-  firstHeadingRange.setBackground('silver');
-
   assignments.sort(compareTaskAssignmentsByTask);
 
-  var row = 2;
+  var row = 1;
   var column = 1;
+  var firstHeaderRow = row;
+  var firstHeaderColumn = column;
+  row += getHeadingRowCount();
+
   for (var i = 0; i < assignments.length; i++) {
     sheet.getRange(row, column).setValue(assignments[i].task);
     sheet.getRange(row, column).setBackground(assignments[i].taskcolor);
@@ -164,11 +155,9 @@ function writeOverviewToSheetVertically(date, assignments) {
   }
 
   row += 1;
-  var secondHeadingRange = sheet.getRange(row, 1, 1, 2);
-  secondHeadingRange.merge();
-  secondHeadingRange.setValue('Heading');
-  secondHeadingRange.setBackground('silver');
-  row += 1;
+  var secondHeaderRow = row;
+  var secondHeaderColumn = column;
+  row += getHeadingRowCount();
 
   assignments.sort(compareTaskAssignmentsByLastnameFirstname);
 
@@ -182,16 +171,31 @@ function writeOverviewToSheetVertically(date, assignments) {
   sheet.autoResizeColumn(1);
   sheet.autoResizeColumn(2);
 
-  firstHeadingRange.setValue('Übersicht für den ' + getDateInGermanFormat(date) + ' nach Aufgaben');
-  firstHeadingRange.setFontSize(11);
-  firstHeadingRange.setFontWeight('bold');
-
-  secondHeadingRange.setValue('Übersicht für den ' + getDateInGermanFormat(date) + ' nach Namen');
-  secondHeadingRange.setFontSize(11);
-  secondHeadingRange.setFontWeight('bold');
+  writeHeading(sheet, firstHeaderRow, firstHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Aufgaben');
+  writeHeading(sheet, secondHeaderRow, secondHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Namen');
 
   sheet.setName('Übersicht-v');
   sheet.showSheet();
+}
+
+function writeHeading(sheet, row, column, text, sortHintText) {
+  firstLineRange = sheet.getRange(row, column, 1, 2);
+  firstLineRange.merge();
+  firstLineRange.setValue(text);
+  firstLineRange.setFontSize(11);
+
+  secondLineRange = sheet.getRange(row + 1, column, 1, 2);
+  secondLineRange.merge();
+  secondLineRange.setValue(sortHintText);
+  secondLineRange.setFontSize(9);
+
+  headingRange = sheet.getRange(row, column, 2, 2);
+  headingRange.setFontWeight('bold');
+  headingRange.setBackground('silver');
+}
+
+function getHeadingRowCount() {
+  return 2;
 }
 
 function addHiddenSheet(sheetname) {

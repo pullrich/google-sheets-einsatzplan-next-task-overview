@@ -349,17 +349,30 @@ function isChangeInRelevantRow(changedRow) {
   return (changedRow === getRowOfRelevantTasks(getAllValues(), getTodayDate()) || changedRow === getNameRow(getAllValues()));
 }
 
-
-
 /**
  * Expected format DD.MM.YYYY
  */
 function parseTextAsDate(text) {
-  var dayIdx = 0;
-  var monthIdx = 1;
-  var yearIdx = 2;
+  const DATE_ELEMENTS_EXP = 3;
+  const DAY_IDX = 0;
+  const MONTH_IDX = 1;
+  const YEAR_IDX = 2;
+
   var dateElements = text.split(".");
-  return new Date(parseInt(dateElements[yearIdx]), parseInt(dateElements[monthIdx]) - 1, parseInt(dateElements[dayIdx]));
+
+  var year = parseInt(dateElements[YEAR_IDX]);
+  var month = parseInt(dateElements[MONTH_IDX]);
+  var day = parseInt(dateElements[DAY_IDX]);
+
+  // IMPROVE: Use return object { ok: true|false, date: date, error: text } ??
+  if (dateElements.length < DATE_ELEMENTS_EXP) {
+    throw new Error("Not enough date elements.");
+  }
+  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+    throw new Error("A date element is NaN.");
+  }
+
+  return new Date(year, month - 1, day);
 }
 
 function genOverview_showDatePrompt() {
@@ -370,7 +383,6 @@ function genOverview_showDatePrompt() {
     'Bitte gib das gewünschte Datum im Format ' + getDateFormatString() + ' ein.',
     ui.ButtonSet.OK_CANCEL);
 
-  // Process the user's response.
   var button = result.getSelectedButton();
   var text = result.getResponseText();
   if (button == ui.Button.OK) {
@@ -379,6 +391,7 @@ function genOverview_showDatePrompt() {
       dateFromUser = parseTextAsDate(text);
     }
     catch (err) {
+      Logger.log(err);
       ui.alert('Eingegebenes Datum [' + text + '] nicht erkannt.\nBenötigtes Format: ' + getDateFormatString());
       return;
     }

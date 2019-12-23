@@ -38,13 +38,6 @@ function generateNextTaskOverview() {
 }
 
 function generateTaskOverview(date) {
-  // The user might interfere - so there may be old intermediate sheets around which need to be deleted.
-  deleteSheet('...erstelle Übersicht-h...');
-  deleteSheet('...erstelle Übersicht-v...');
-
-  deleteSheet(getOverviewSheetName_h());
-  deleteSheet(getOverviewSheetName_v());
-
   var ui = SpreadsheetApp.getUi();
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sourceSheet = activeSpreadsheet.getSheetByName(getDataSheetName());
@@ -73,8 +66,19 @@ function generateTaskOverview(date) {
 
   startShowingOverviewGenerationSheet();
 
-  writeOverviewToSheetVertically(dateOfTasks, assignmentList);
-  writeOverviewToSheetHorizontally(dateOfTasks, assignmentList);
+  var osv = ensureOverviewSheet_v_Exists();
+  var osh = ensureOverviewSheet_h_Exists();
+  osv.hideSheet();
+  osh.hideSheet();
+
+  thoroughlyClearSheet(osv);
+  writeOverviewToSheetVertically(osv, dateOfTasks, assignmentList);
+
+  thoroughlyClearSheet(osh);
+  writeOverviewToSheetHorizontally(osh, dateOfTasks, assignmentList);
+
+  osv.showSheet();
+  osh.showSheet();
 
   stopShowingOverviewGenerationSheet();
 }
@@ -103,8 +107,7 @@ function TaskAssignment(task, agent, taskcolor) {
   }
 }
 
-function writeOverviewToSheetHorizontally(date, assignments) {
-  sheet = addHiddenSheet('...erstelle Übersicht-h...');
+function writeOverviewToSheetHorizontally(sheet, date, assignments) {
   assignments.sort(compareTaskAssignmentsByTask);
 
   var row = 1;
@@ -143,14 +146,9 @@ function writeOverviewToSheetHorizontally(date, assignments) {
 
   writeHeading(sheet, firstHeaderRow, firstHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Aufgaben');
   writeHeading(sheet, secondHeaderRow, secondHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Namen');
-
-
-  sheet.setName(getOverviewSheetName_h());
-  sheet.showSheet();
 }
 
-function writeOverviewToSheetVertically(date, assignments) {
-  sheet = addHiddenSheet('...erstelle Übersicht-v...');
+function writeOverviewToSheetVertically(sheet, date, assignments) {
   assignments.sort(compareTaskAssignmentsByTask);
 
   var row = 1;
@@ -185,9 +183,6 @@ function writeOverviewToSheetVertically(date, assignments) {
 
   writeHeading(sheet, firstHeaderRow, firstHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Aufgaben');
   writeHeading(sheet, secondHeaderRow, secondHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Namen');
-
-  sheet.setName(getOverviewSheetName_v());
-  sheet.showSheet();
 }
 
 function writeHeading(sheet, row, column, text, sortHintText) {
@@ -433,7 +428,7 @@ function getTodayDate() {
 }
 
 function getOverviewGenerationSheetName() {
-  return "--erstelle Übersicht-SN--";
+  return "--erstelle Tagesübersicht--";
 }
 
 function thoroughlyClearSheet(sheet) {
@@ -470,4 +465,30 @@ function stopShowingOverviewGenerationSheet() {
   if (sheet != null) {
     sheet.hideSheet();
   }
+}
+
+function ensureOverviewSheet_h_Exists() {
+  return ensureSheetExists(getOverviewSheetName_h());
+}
+
+function ensureOverviewSheet_v_Exists() {
+  return ensureSheetExists(getOverviewSheetName_v());
+}
+
+function ensureSheetExists(sheetname) {
+  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = activeSpreadsheet.getSheetByName(sheetname);
+  if (sheet != null) {
+    return sheet;
+  }
+
+  var userVisibleSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var activeRange = userVisibleSheet.getActiveRange(); // We need this, because adding a sheet changes the focus for the user to the new sheet ... which we don't want.
+
+  sheet = activeSpreadsheet.insertSheet(sheetname);
+
+  SpreadsheetApp.getActiveSpreadsheet().setActiveSheet(userVisibleSheet);
+  SpreadsheetApp.getActiveSpreadsheet().setActiveRange(activeRange);
+
+  return sheet;
 }

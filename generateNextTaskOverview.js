@@ -33,22 +33,6 @@ function onEdit(e) {
   }
 }
 
-function TaskAssignment(task, agent, taskcolor) {
-  this.task = task;
-  this.agent = agent.trim();
-  this.taskcolor = taskcolor;
-
-  var namePieces = this.agent.split(' ');
-  this.lastname = namePieces[namePieces.length - 1];
-  this.firstname = namePieces[0];
-
-  this.getLastnameFirstname = function () {
-    return this.lastname + ', ' + this.firstname;
-  }
-}
-
-
-
 function generateNextTaskOverview() {
   generateTaskOverview(getTodayDate());
 }
@@ -89,6 +73,30 @@ function generateTaskOverview(date) {
 
   writeOverviewToSheetVertically(dateOfTasks, assignmentList);
   writeOverviewToSheetHorizontally(dateOfTasks, assignmentList);
+}
+
+function getAllValues() {
+  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var dataSheet = activeSpreadsheet.getSheetByName(getDataSheetName());
+  if (dataSheet === null) {
+    Logger.log('Could not find sheet by name: ' + getDataSheetName());
+    return null;
+  }
+  return dataSheet.getDataRange().getValues();
+}
+
+function TaskAssignment(task, agent, taskcolor) {
+  this.task = task;
+  this.agent = agent.trim();
+  this.taskcolor = taskcolor;
+
+  var namePieces = this.agent.split(' ');
+  this.lastname = namePieces[namePieces.length - 1];
+  this.firstname = namePieces[0];
+
+  this.getLastnameFirstname = function () {
+    return this.lastname + ', ' + this.firstname;
+  }
 }
 
 function writeOverviewToSheetHorizontally(date, assignments) {
@@ -267,15 +275,11 @@ function getLastNameColumn(allValues) {
   for (var i = 1; i < allValues[nameRowIndex].length; i++) {
     var cellValue = allValues[nameRowIndex][i];
     if (cellValue === "" || cellValue === undefined || cellValue === null) {
-      lastNameColumn = i; // We can just use the index, because we need the colun (and not the index) BEFORE the first occurrence of an empty cell.
+      lastNameColumn = i; // We can just use the index, because we need the column (and not the index) BEFORE the first occurrence of an empty cell.
       break;
     }
   }
   return lastNameColumn;
-}
-
-function getDataSheetName() {
-  return "Tabellenblatt1";
 }
 
 function getDateOfTasks(allValues, row) {
@@ -304,16 +308,6 @@ function compareTaskAssignmentsByLastnameFirstname(a, b) {
     return 1;
   }
   return 0;
-}
-
-function getAllValues() {
-  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var dataSheet = activeSpreadsheet.getSheetByName(getDataSheetName());
-  if (dataSheet === null) {
-    Logger.log('Could not find sheet by name: ' + getDataSheetName());
-    return null;
-  }
-  return dataSheet.getDataRange().getValues();
 }
 
 function getRowOfRelevantTasks(allValues, date) {
@@ -412,6 +406,10 @@ function isValidDate(d) {
   if (Object.prototype.toString.call(d) !== "[object Date]")
     return false;
   return !isNaN(d.getTime());
+}
+
+function getDataSheetName() {
+  return "Tabellenblatt1";
 }
 
 function getOverviewSheetName_h() {

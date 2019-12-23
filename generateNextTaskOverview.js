@@ -58,8 +58,8 @@ function generateTaskOverview(date) {
   deleteSheet('...erstelle Übersicht-h...');
   deleteSheet('...erstelle Übersicht-v...');
 
-  deleteSheet('Übersicht-h');
-  deleteSheet('Übersicht-v');
+  deleteSheet(getOverviewSheetName_h());
+  deleteSheet(getOverviewSheetName_v());
 
   var ui = SpreadsheetApp.getUi();
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -133,7 +133,7 @@ function writeOverviewToSheetHorizontally(date, assignments) {
   writeHeading(sheet, secondHeaderRow, secondHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Namen');
 
 
-  sheet.setName('Übersicht-h');
+  sheet.setName(getOverviewSheetName_h());
   sheet.showSheet();
 }
 
@@ -174,7 +174,7 @@ function writeOverviewToSheetVertically(date, assignments) {
   writeHeading(sheet, firstHeaderRow, firstHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Aufgaben');
   writeHeading(sheet, secondHeaderRow, secondHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Namen');
 
-  sheet.setName('Übersicht-v');
+  sheet.setName(getOverviewSheetName_v());
   sheet.showSheet();
 }
 
@@ -248,14 +248,6 @@ function getIndexOfDateValueOccurrance(dates, backwards) {
     }
     return null;
   }
-}
-
-function getTimeZoneGermany() {
-  return "GMT+2";
-}
-
-function getTodayDate() {
-  return new Date();
 }
 
 function getNameRow(allValues) {
@@ -420,4 +412,20 @@ function isValidDate(d) {
   if (Object.prototype.toString.call(d) !== "[object Date]")
     return false;
   return !isNaN(d.getTime());
+}
+
+function getOverviewSheetName_h() {
+  return "Übersicht-h";
+}
+
+function getOverviewSheetName_v() {
+  return "Übersicht-v";
+}
+
+function getTimeZoneGermany() {
+  return "GMT+2";
+}
+
+function getTodayDate() {
+  return new Date();
 }

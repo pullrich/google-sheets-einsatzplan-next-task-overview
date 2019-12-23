@@ -71,8 +71,12 @@ function generateTaskOverview(date) {
     });
   }
 
+  startShowingOverviewGenerationSheet();
+
   writeOverviewToSheetVertically(dateOfTasks, assignmentList);
   writeOverviewToSheetHorizontally(dateOfTasks, assignmentList);
+
+  stopShowingOverviewGenerationSheet();
 }
 
 function getAllValues() {
@@ -208,7 +212,7 @@ function getHeadingRowCount() {
 
 function addHiddenSheet(sheetname) {
   var userVisibleSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var activeRange = userVisibleSheet.getActiveRange();
+  var activeRange = userVisibleSheet.getActiveRange(); // We need this, because adding a sheet changes the focus for the user to the new sheet ... which we don't want.
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(sheetname);
   sheet.hideSheet();
@@ -426,4 +430,44 @@ function getTimeZoneGermany() {
 
 function getTodayDate() {
   return new Date();
+}
+
+function getOverviewGenerationSheetName() {
+  return "--erstelle Übersicht-SN--";
+}
+
+function thoroughlyClearSheet(sheet) {
+  sheet.clear(); // content and formatting
+  sheet.clearNotes();
+  sheet.clearConditionalFormatRules();
+  //sheet.removeChart(chart?);
+  // unhide row, column ?
+  // isColumn|RowHiddenByUser() ?
+}
+
+function startShowingOverviewGenerationSheet() {
+  // Show the existing "under construction" sheet, if there is one.
+  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetToShow = activeSpreadsheet.getSheetByName(getOverviewGenerationSheetName());
+  if (sheetToShow != null) {
+    sheetToShow.showSheet();
+    return;
+  }
+
+  // If we don't have the "under contruction" sheet, we have to make one.
+  var userVisibleSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var activeRange = userVisibleSheet.getActiveRange(); // We need this, because adding a sheet changes the focus for the user to the new sheet ... which we don't want.
+
+  var sheet = activeSpreadsheet.insertSheet(getOverviewGenerationSheetName());
+
+  SpreadsheetApp.getActiveSpreadsheet().setActiveSheet(userVisibleSheet);
+  SpreadsheetApp.getActiveSpreadsheet().setActiveRange(activeRange);
+}
+
+function stopShowingOverviewGenerationSheet() {
+  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = activeSpreadsheet.getSheetByName(getOverviewGenerationSheetName());
+  if (sheet != null) {
+    sheet.hideSheet();
+  }
 }

@@ -8,16 +8,17 @@
  * @param {Event} e The onOpen event.
  */
 function onOpen(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var menuEntries = [];
-  menuEntries.push({ name: "Nächste", functionName: "generateNextTaskOverview" });
-  //menuEntries.push(null); // line separator
-  menuEntries.push({ name: "Für Datum", functionName: "genOverview_showDatePrompt" });
-
-  ss.addMenu("Übersicht erzeugen", menuEntries);
-
-
+  addEinsatzplanMenu();
   generateNextTaskOverview();
+}
+
+function addEinsatzplanMenu() {
+  SpreadsheetApp.getUi()
+    .createMenu('Einsatzplan')
+    .addSubMenu(SpreadsheetApp.getUi().createMenu('Tagesübersicht erzeugen')
+      .addItem('Nächste', 'generateNextTaskOverview')
+      .addItem('Für Datum', 'genOverview_showDatePrompt'))
+    .addToUi();
 }
 
 /**
@@ -47,7 +48,7 @@ function generateTaskOverview(date) {
 
   var taskRowIndex = getRowOfRelevantTasks(allValues, date) - 1;
   if (taskRowIndex <= -1) {
-    ui.alert('Da keine geeignete Datenzeile gefunden werden konnte, wird kein Übersichtstabellenblatt erzeugt.', ui.ButtonSet.OK);
+    ui.alert('Da keine geeignete Datenzeile gefunden werden konnte, wird keine Tagesübersicht erzeugt.', ui.ButtonSet.OK);
     Logger.log('No fitting date row found.');
     return;
   }
@@ -351,13 +352,13 @@ function parseTextAsDate(text) {
 
   // IMPROVE: Use return object { ok: true|false, date: date, error: text } ??
   if (dateElements.length < DATE_ELEMENTS_EXP) {
-    throw new Error("Not enough date elements.");
+    return { ok: false, error: 'Das Datum enthält nicht Tag, Monat und Jahr.' }
   }
   if (isNaN(year) || isNaN(month) || isNaN(day)) {
-    throw new Error("A date element is NaN.");
+    return { ok: false, error: 'Ein Datumselement ist keine gültige Zahl.' }
   }
 
-  return new Date(year, month - 1, day);
+  return { ok: true, date: new Date(year, month - 1, day) }
 }
 
 function genOverview_showDatePrompt() {
@@ -372,12 +373,12 @@ function genOverview_showDatePrompt() {
   var text = result.getResponseText();
   if (button == ui.Button.OK) {
     dateFromUser = new Date(0);
-    try {
-      dateFromUser = parseTextAsDate(text);
+    parseResult = parseTextAsDate(text);
+    if (parseResult.ok) {
+      dateFromUser = parseResult.date;
     }
-    catch (err) {
-      Logger.log(err);
-      ui.alert('Eingegebenes Datum [' + text + '] nicht erkannt.\nBenötigtes Format: ' + getDateFormatString());
+    else {
+      ui.alert('Eingegebenes Datum [' + text + '] nicht erkannt.\nProblem: ' + parseResult.error + '\nBenötigtes Format: ' + getDateFormatString());
       return;
     }
 

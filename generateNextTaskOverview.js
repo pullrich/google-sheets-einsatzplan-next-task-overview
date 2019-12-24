@@ -409,7 +409,7 @@ function isValidDate(d) {
 }
 
 function getDataSheetName() {
-  return "Tabellenblatt1";
+  return "Einsatzplan";
 }
 
 function getOverviewSheetName_h() {

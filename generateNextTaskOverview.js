@@ -444,6 +444,7 @@ function thoroughlyClearSheet(sheet) {
 function startShowingOverviewGenerationSheet() {
   // Show the existing "under construction" sheet, if there is one.
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  activeSpreadsheet.toast('Erstelle Tagesübersicht ...', 'Tagesübersicht', 5);
   var sheetToShow = activeSpreadsheet.getSheetByName(getOverviewGenerationSheetName());
   if (sheetToShow != null) {
     sheetToShow.showSheet();
@@ -462,6 +463,7 @@ function startShowingOverviewGenerationSheet() {
 
 function stopShowingOverviewGenerationSheet() {
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  activeSpreadsheet.toast('Tagesübersicht fertig.', 'Tagesübersicht', 1);
   var sheet = activeSpreadsheet.getSheetByName(getOverviewGenerationSheetName());
   if (sheet != null) {
     sheet.hideSheet();

@@ -26,11 +26,14 @@ function addEinsatzplanMenu() {
  * @param {Event} e The onEdit event.
  */
 function onEdit(e) {
+  const CHG_NOT_RELEVANT = 'Change not in relevant row. No action required.';
+  var fnlogger = getFnLogger(arguments.callee.name);
+
   if (isChangeInRelevantRow(e.range.getRow())) {
     generateNextTaskOverview();
   }
   else {
-    Logger.log('Change not in relevant row. No action required.');
+    fnlogger.log(CHG_NOT_RELEVANT);
   }
 }
 
@@ -49,7 +52,6 @@ function generateTaskOverview(date) {
   var taskRowIndex = getRowOfRelevantTasks(allValues, date) - 1;
   if (taskRowIndex <= -1) {
     ui.alert('Da keine geeignete Datenzeile gefunden werden konnte, wird keine Tagesübersicht erzeugt.', ui.ButtonSet.OK);
-    Logger.log('No fitting date row found.');
     return;
   }
   var dateOfTasks = getDateOfTasks(allValues, taskRowIndex + 1);
@@ -85,10 +87,11 @@ function generateTaskOverview(date) {
 }
 
 function getAllValues() {
+  var fnlogger = getFnLogger(arguments.callee.name);
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var dataSheet = activeSpreadsheet.getSheetByName(getDataSheetName());
   if (dataSheet === null) {
-    Logger.log('Could not find sheet by name: ' + getDataSheetName());
+    fnlogger.log('Could not find sheet by name: ' + getDataSheetName());
     return null;
   }
   return dataSheet.getDataRange().getValues();
@@ -335,9 +338,9 @@ function isChangeInRelevantRow(changedRow) {
   return (changedRow === getRowOfRelevantTasks(getAllValues(), getTodayDate()) || changedRow === getNameRow(getAllValues()));
 }
 
-/**
- * Expected format DD.MM.YYYY
- */
+/*
+Expected format DD.MM.YYYY
+*/
 function parseTextAsDate(text) {
   const DATE_ELEMENTS_EXP = 3;
   const DAY_IDX = 0;
@@ -421,7 +424,7 @@ function getOverviewSheetName_v() {
 }
 
 function getTimeZoneGermany() {
-  return "GMT+2";
+  return SpreadsheetApp.getActive().getSpreadsheetTimeZone();
 }
 
 function getTodayDate() {
@@ -494,4 +497,15 @@ function ensureSheetExists(sheetname) {
   SpreadsheetApp.getActiveSpreadsheet().setActiveRange(activeRange);
 
   return sheet;
+}
+
+/*
+Call with arguments.callee.name and hold on to the return value.
+*/
+function getFnLogger(fnname) {
+  return {
+    log: function (entry) {
+      Logger.log(' [' + fnname + '] ' + entry);
+    }
+  }
 }

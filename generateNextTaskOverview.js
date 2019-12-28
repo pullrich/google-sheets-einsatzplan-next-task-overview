@@ -3,6 +3,18 @@
  */
 // https://developers.google.com/apps-script/guides/services/authorization
 
+/*
+Hints: Use getFnLogger(arguments.callee.name) to get a Logger.Log which also adds the method name to the log entry.
+
+For Utilities.formatString() documentation see:
+  https://developers.google.com/apps-script/reference/utilities/utilities#formatstringtemplate,-args
+  http://www.diveintojavascript.com/projects/javascript-sprintf
+
+Use sheet properties to keep this script from running concurrently.
+e.g.: overviewGenScriptRunning?()
+Add a change counter? OnEdit increment change counter, sleep 200ms check change counter, if greater sleep again, if not begin genTaskOverview.
+*/
+
 /**
  * The event handler triggered when opening the spreadsheet.
  * @param {Event} e The onOpen event.
@@ -29,7 +41,8 @@ function onEdit(e) {
   const CHG_NOT_RELEVANT = 'Change not in relevant row. No action required.';
   var fnlogger = getFnLogger(arguments.callee.name);
 
-  if (isChangeInRelevantRow(e.range.getRow())) {
+  fnlogger.log(Utilities.formatString('Calling isEditInNextDateRowOrNameRow(%i)', e.range.getRow()));
+  if (isEditInNextDateRowOrNameRow(e.range.getRow())) {
     generateNextTaskOverview();
   }
   else {
@@ -334,8 +347,19 @@ function getRowOfRelevantTasks(allValues, date) {
   return taskRowIndex + 1;
 }
 
-function isChangeInRelevantRow(changedRow) {
-  return (changedRow === getRowOfRelevantTasks(getAllValues(), getTodayDate()) || changedRow === getNameRow(getAllValues()));
+function isEditInNextDateRowOrNameRow(changedRow) {
+  var fnlogger = getFnLogger(arguments.callee.name);
+  var result = isEditInNameRow(changedRow) || isEditInNextDateRow(changedRow);
+  fnlogger.log(Utilities.formatString('Edit in name row: %s. Edit in next data row: %s. Returning: %s', isEditInNameRow(changedRow), isEditInNextDateRow(changedRow), result));
+  return (result);
+}
+
+function isEditInNextDateRow(changedRow) {
+  return changedRow === getRowOfRelevantTasks(getAllValues(), getTodayDate());
+}
+
+function isEditInNameRow(changedRow) {
+  return changedRow === getNameRow(getAllValues());
 }
 
 /*

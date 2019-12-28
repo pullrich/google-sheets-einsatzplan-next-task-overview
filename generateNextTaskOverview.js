@@ -1,10 +1,12 @@
 /**
  * @OnlyCurrentDoc
  */
-// https://developers.google.com/apps-script/guides/services/authorization
 
 /*
-Hints: Use getFnLogger(arguments.callee.name) to get a Logger.Log which also adds the method name to the log entry.
+Hints:
+Use getFnLogger(arguments.callee.name) to get a Logger.Log which also adds the method name to the log entry.
+
+https://developers.google.com/apps-script/guides/services/authorization
 
 For Utilities.formatString() documentation see:
   https://developers.google.com/apps-script/reference/utilities/utilities#formatstringtemplate,-args
@@ -378,7 +380,6 @@ function parseTextAsDate(text) {
   var month = parseInt(dateElements[MONTH_IDX]);
   var day = parseInt(dateElements[DAY_IDX]);
 
-  // IMPROVE: Use return object { ok: true|false, date: date, error: text } ??
   if (dateElements.length < DATE_ELEMENTS_EXP) {
     return { ok: false, error: 'Das Datum enthält nicht Tag, Monat und Jahr.' }
   }

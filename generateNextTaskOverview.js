@@ -38,16 +38,18 @@ function addEinsatzplanMenu() {
  * @param {Event} e The onEdit event.
  */
 function onEdit(e) {
-  const CHG_NOT_RELEVANT = 'Change not in relevant row. No action required.';
   var fnlogger = getFnLogger(arguments.callee.name);
 
-  fnlogger.log(Utilities.formatString('Calling isEditInNextDateRowOrNameRow(%i)', e.range.getRow()));
-  if (isEditInNextDateRowOrNameRow(e.range.getRow())) {
+  if (isEditTriggeringOverviewGeneration(e.range)) {
     generateNextTaskOverview();
   }
   else {
-    fnlogger.log(CHG_NOT_RELEVANT);
+    fnlogger.log(Utilities.formatString('Change in sheet [%s] in row [%i] does not trigger an overview generation. No action required.', e.range.getSheet().getName(), e.range.getRow()));
   }
+}
+
+function isEditTriggeringOverviewGeneration(range) {
+  return range.getSheet().getName() === getDataSheetName() && isEditInNextDateRowOrNameRow(range.getRow());
 }
 
 function generateNextTaskOverview() {
@@ -350,7 +352,6 @@ function getRowOfRelevantTasks(allValues, date) {
 function isEditInNextDateRowOrNameRow(changedRow) {
   var fnlogger = getFnLogger(arguments.callee.name);
   var result = isEditInNameRow(changedRow) || isEditInNextDateRow(changedRow);
-  fnlogger.log(Utilities.formatString('Edit in name row: %s. Edit in next data row: %s. Returning: %s', isEditInNameRow(changedRow), isEditInNextDateRow(changedRow), result));
   return (result);
 }
 

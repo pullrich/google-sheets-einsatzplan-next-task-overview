@@ -3,6 +3,11 @@
  */
 
 /*
+This project is licensed under the terms of the MIT license.
+See https://github.com/pullrich/google-sheets-einsatzplan-next-task-overview for more information.
+*/
+
+/*
 Hints:
 Use getFnLogger(arguments.callee.name) to get a Logger.Log which also adds the method name to the log entry.
 
@@ -12,6 +17,7 @@ For Utilities.formatString() documentation see:
   https://developers.google.com/apps-script/reference/utilities/utilities#formatstringtemplate,-args
   http://www.diveintojavascript.com/projects/javascript-sprintf
 
+TODO:
 Use sheet properties to keep this script from running concurrently.
 e.g.: overviewGenScriptRunning?()
 Add a change counter? OnEdit increment change counter, sleep 200ms check change counter, if greater sleep again, if not begin genTaskOverview.

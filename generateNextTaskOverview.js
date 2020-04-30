@@ -92,6 +92,7 @@ function generateTaskOverview(date) {
 
   startShowingOverviewGenerationSheet();
 
+  // output sheet vertical|horizontal
   var osv = ensureOverviewSheet_v_Exists();
   var osh = ensureOverviewSheet_h_Exists();
   osv.hideSheet();
@@ -165,14 +166,14 @@ function writeOverviewToSheetHorizontally(sheet, date, assignments) {
     row += 1;
   }
 
+  writeHeading(sheet, firstHeaderRow, firstHeaderColumn, date, 'nach Aufgaben');
+  writeHeading(sheet, secondHeaderRow, secondHeaderColumn, date, 'nach Namen');
+
   sheet.autoResizeColumn(1);
   sheet.autoResizeColumn(2);
   sheet.setColumnWidth(3, 10);
   sheet.autoResizeColumn(4);
   sheet.autoResizeColumn(5);
-
-  writeHeading(sheet, firstHeaderRow, firstHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Aufgaben');
-  writeHeading(sheet, secondHeaderRow, secondHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Namen');
 }
 
 function writeOverviewToSheetVertically(sheet, date, assignments) {
@@ -205,17 +206,21 @@ function writeOverviewToSheetVertically(sheet, date, assignments) {
     row += 1;
   }
 
+  writeHeading(sheet, firstHeaderRow, firstHeaderColumn, date, 'nach Aufgaben');
+  writeHeading(sheet, secondHeaderRow, secondHeaderColumn, date, 'nach Namen');
+
   sheet.autoResizeColumn(1);
   sheet.autoResizeColumn(2);
-
-  writeHeading(sheet, firstHeaderRow, firstHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Aufgaben');
-  writeHeading(sheet, secondHeaderRow, secondHeaderColumn, 'Übersicht für den ' + getDateInGermanFormat(date), 'nach Namen');
 }
 
-function writeHeading(sheet, row, column, text, sortHintText) {
-  firstLineRange = sheet.getRange(row, column, 1, 2);
-  firstLineRange.merge();
-  firstLineRange.setValue(text);
+function writeHeading(sheet, row, column, date, sortHintText) {
+  // Übersicht für
+  firstLineRange = sheet.getRange(row, column);
+  firstLineRange.setValue("Übersicht für");
+  firstLineRange.setFontSize(11);
+  // den <Datum>
+  firstLineRange = sheet.getRange(row, column + 1);
+  firstLineRange.setValue("den " + getDateInGermanFormat(date));
   firstLineRange.setFontSize(11);
 
   secondLineRange = sheet.getRange(row + 1, column, 1, 2);
@@ -344,14 +349,15 @@ function getRowOfRelevantTasks(allValues, date) {
   var taskRowIndex = -1;
   var dateOfTasks = null;
   for (var i = firstDateOccurrsIndex; i < lastDateOccurrsIndex + 1; i++) {
-    if (isValidDate(dateColumnArray[i])) {
-      if (isGreaterOrEqualDate(dateColumnArray[i], date)) {
-        taskRowIndex = i;
-        dateOfTasks = dateColumnArray[i];
-        break;
-      }
+    if (!isValidDate(dateColumnArray[i])) {
+      continue;
     }
-    continue;
+
+    if (isGreaterOrEqualDate(dateColumnArray[i], date)) {
+      taskRowIndex = i;
+      dateOfTasks = dateColumnArray[i];
+      break;
+    }
   }
 
   return taskRowIndex + 1;

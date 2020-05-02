@@ -220,7 +220,7 @@ function writeHeading(sheet, row, column, date, sortHintText) {
   firstLineRange.setFontSize(11);
   // den <Datum>
   firstLineRange = sheet.getRange(row, column + 1);
-  firstLineRange.setValue(getDateInGermanFormat(date));
+  firstLineRange.setValue(getDateInGermanFormatWithShortDayName(date));
   firstLineRange.setFontSize(11);
   firstLineRange.setHorizontalAlignment("left");
 
@@ -430,16 +430,44 @@ function genOverview_showDatePrompt() {
   }
 }
 
-//
-// Helper functions ->
-//
+/*******************************************************************************
+
+Helper functions ->
+
+*******************************************************************************/
 
 function getDateFormatString() {
-  return "DD.MM.YYYY"
+  return "DD.MM.YYYY";
 }
 
 function getDateInGermanFormat(date) {
-  return Utilities.formatDate(date, getTimeZoneGermany(), "dd.MM.yyyy")
+  return Utilities.formatDate(date, getTimeZoneGermany(), "dd.MM.yyyy");
+}
+
+function getDateInGermanFormatWithShortDayName(date) {
+  var dateString = Utilities.formatDate(date, getTimeZoneGermany(), "dd.MM.yyyy");
+  return Utilities.formatString("%s %s", getShortDayNameByWeekday(date.getDay()), dateString);
+}
+
+function getShortDayNameByWeekday(dayNum) {
+  // weekday as defined by Date.getDay()
+  switch (dayNum) {
+    case 0: return "So.";
+      break;
+    case 1: return "Mo.";
+      break;
+    case 2: return "Di.";
+      break;
+    case 3: return "Mi.";
+      break;
+    case 4: return "Do.";
+      break;
+    case 5: return "Fr.";
+      break;
+    case 6: return "Sa.";
+      break;
+    default: return "Unbekannte Wochentagszahl " + dayNum;
+  }
 }
 
 // From http://stackoverflow.com/questions/1353684

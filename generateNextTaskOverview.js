@@ -216,12 +216,13 @@ function writeOverviewToSheetVertically(sheet, date, assignments) {
 function writeHeading(sheet, row, column, date, sortHintText) {
   // Übersicht für
   firstLineRange = sheet.getRange(row, column);
-  firstLineRange.setValue("Übersicht für");
+  firstLineRange.setValue("Übersicht");
   firstLineRange.setFontSize(11);
   // den <Datum>
   firstLineRange = sheet.getRange(row, column + 1);
-  firstLineRange.setValue("den " + getDateInGermanFormat(date));
+  firstLineRange.setValue(getDateInGermanFormat(date));
   firstLineRange.setFontSize(11);
+  firstLineRange.setHorizontalAlignment("left");
 
   secondLineRange = sheet.getRange(row + 1, column, 1, 2);
   secondLineRange.merge();
